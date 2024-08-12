@@ -1,0 +1,5 @@
+fastparquet
+pyarrow
+selenium
+pandas
+ipykernel
