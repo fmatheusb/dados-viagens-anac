@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -8,9 +9,47 @@ from webdriver_manager.chrome import ChromeDriverManager
 import os
 import pandas as pd
 import time
+import zipfile
 
-# Configuração do webdriver
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+# Caminho do diretório temporário
+temp_dir = r"C:\Users\fmath\Documents\dados-viagens-anac\dados-viagens-anac\data\arquivos"
+
+def wait_for_downloads(directory, timeout=300):
+    """Espera até que novos arquivos sejam baixados no diretório especificado."""
+    initial_files = set(os.listdir(directory))  # Arquivos presentes no início
+    start_time = time.time()
+    while True:
+        current_files = set(os.listdir(directory))  # Arquivos presentes agora
+        new_files = current_files - initial_files  # Identifica novos arquivos
+        if new_files:
+            print(f"Novos arquivos baixados: {new_files}")
+            break
+        if time.time() - start_time > timeout:
+            print("Tempo limite atingido para o download.")
+            break
+        time.sleep(5)
+
+# Função para limpar todos os arquivos .zip do diretório
+def clear_zip_files(directory):
+    for file_name in os.listdir(directory):
+        if file_name.endswith(".zip"):
+            file_path = os.path.join(directory, file_name)
+            try:
+                os.remove(file_path)
+                print(f"Arquivo removido: {file_path}")
+            except Exception as e:
+                print(f"Erro ao remover {file_path}: {e}")
+
+# Configurar as opções do Chrome
+chrome_options = Options()
+chrome_options.add_experimental_option("prefs", {
+    "download.default_directory": temp_dir,
+    "download.prompt_for_download": False,  # Desabilitar prompt de download
+    "directory_upgrade": True,  # Atualizar o diretório se ele já existe
+})
+
+# Iniciar o WebDriver com as opções configuradas
+driver = webdriver.Chrome(options=chrome_options)
 
 # Acessar a página
 driver.get("https://sas.anac.gov.br/sas/downloads/view/frmDownload.aspx?tema=14")
@@ -18,12 +57,12 @@ driver.get("https://sas.anac.gov.br/sas/downloads/view/frmDownload.aspx?tema=14"
 # Espera para garantir que a página carregue
 time.sleep(2)
 
+# Limpar arquivos .zip antes de iniciar
+clear_zip_files(temp_dir)
+
 # Seleciona todos os anos disponíveis
 select_element = Select(driver.find_element(By.ID, 'MainContent_listAno'))
 anos = [option.get_attribute('value') for option in select_element.options]
-
-# Lista para armazenar dataframes
-dataframes = []
 
 # Iterar sobre cada ano
 for ano in anos:
@@ -32,39 +71,25 @@ for ano in anos:
     ano_element.click()
     
     # Clicar no botão "Buscar Arquivos"
-    buscar_button = driver.find_element(By.ID, 'MainContent_btnListaArquivos')
+    buscar_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'MainContent_btnListaArquivos')))
     buscar_button.click()
     
-    # Espera para garantir que os arquivos carreguem
-    time.sleep(2)
+    # Esperar até que a lista de arquivos seja carregada
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'MainContent_btnMarcar')))
     
     # Clicar no botão "Marcar Todos"
     marcar_todos_button = driver.find_element(By.ID, 'MainContent_btnMarcar')
     marcar_todos_button.click()
     
     # Clicar no botão "Baixar Marcados"
-    baixar_button = driver.find_element(By.ID, 'MainContent_btnBaixar')
+    baixar_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'MainContent_btnBaixar')))
     baixar_button.click()
-    
-    # Espera para garantir o download dos arquivos
-    time.sleep(10)  # Ajuste conforme necessário para garantir que os arquivos sejam baixados
 
-    # Verifica a pasta de downloads
-    download_dir = 'data/arquivos'  # Substitua pelo caminho correto da pasta de downloads
-    downloaded_files = [os.path.join(download_dir, file) for file in os.listdir(download_dir) if file.endswith(".csv")]
-    
-    # Carregar os arquivos CSV e armazená-los em uma lista de dataframes
-    for file in downloaded_files:
-        df = pd.read_csv(file)
-        dataframes.append(df)
-    
-    # Opcional: mover os arquivos para uma pasta temporária ou deletar após o uso
-    for file in downloaded_files:
-        os.remove(file)  # Remove o arquivo após processamento
+    # Esperar até que novos arquivos sejam baixados
+    # wait_for_downloads(temp_dir)
 
-# Concatenar todos os dataframes em um único CSV
-final_df = pd.concat(dataframes, ignore_index=True)
-final_df.to_csv("output.csv", index=False)
+#Tempo para finalizar todos os downloads
+time.sleep(60)
 
 # Fechar o navegador
 driver.quit()
