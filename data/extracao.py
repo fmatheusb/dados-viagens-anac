@@ -2,32 +2,13 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 import os
-import pandas as pd
 import time
-import zipfile
 
 # Caminho do diretório temporário
 temp_dir = r"C:\Users\fmath\Documents\dados-viagens-anac\dados-viagens-anac\data\arquivos"
-
-def wait_for_downloads(directory, timeout=300):
-    """Espera até que novos arquivos sejam baixados no diretório especificado."""
-    initial_files = set(os.listdir(directory))  # Arquivos presentes no início
-    start_time = time.time()
-    while True:
-        current_files = set(os.listdir(directory))  # Arquivos presentes agora
-        new_files = current_files - initial_files  # Identifica novos arquivos
-        if new_files:
-            print(f"Novos arquivos baixados: {new_files}")
-            break
-        if time.time() - start_time > timeout:
-            print("Tempo limite atingido para o download.")
-            break
-        time.sleep(5)
 
 # Função para limpar todos os arquivos .zip do diretório
 def clear_zip_files(directory):
@@ -53,9 +34,6 @@ driver = webdriver.Chrome(options=chrome_options)
 
 # Acessar a página
 driver.get("https://sas.anac.gov.br/sas/downloads/view/frmDownload.aspx?tema=14")
-
-# Espera para garantir que a página carregue
-time.sleep(2)
 
 # Limpar arquivos .zip antes de iniciar
 clear_zip_files(temp_dir)
@@ -84,9 +62,6 @@ for ano in anos:
     # Clicar no botão "Baixar Marcados"
     baixar_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'MainContent_btnBaixar')))
     baixar_button.click()
-
-    # Esperar até que novos arquivos sejam baixados
-    # wait_for_downloads(temp_dir)
 
 #Tempo para finalizar todos os downloads
 time.sleep(60)
