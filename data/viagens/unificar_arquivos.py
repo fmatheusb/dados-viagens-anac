@@ -7,13 +7,13 @@ import chardet
 import io
 
 # Caminho da pasta com os arquivos zip
-caminho_pasta = r"C:\Users\fmath\Documents\dados-viagens-anac\dados-viagens-anac\data\arquivos_brutos"
+caminho_pasta = r"C:\Users\fmath\Documents\dados-viagens-anac\dados-viagens-anac\data\viagens\arquivos_brutos"
 
 # Caminho final para o csv tratado
 caminho_final = r"C:\Users\fmath\Documents"
 
 # Pasta temporária para descompactar os arquivos
-pasta_temporaria = r"C:\Users\fmath\Documents\dados-viagens-anac\dados-viagens-anac\data\temp"
+pasta_temporaria = r"C:\Users\fmath\Documents\dados-viagens-anac\dados-viagens-anac\data\viagens\temp"
 
 # Lista para armazenar os DataFrames
 lista_df = []

@@ -8,7 +8,7 @@ import os
 import time
 
 # Caminho do diretório temporário
-temp_dir = r"C:\Users\fmath\Documents\dados-viagens-anac\dados-viagens-anac\data\arquivos_brutos"
+temp_dir = r"C:\Users\fmath\Documents\dados-viagens-anac\dados-viagens-anac\data\viagens\arquivos_brutos"
 
 # Função para limpar todos os arquivos .zip do diretório
 def clear_zip_files(directory):
@@ -42,14 +42,8 @@ clear_zip_files(temp_dir)
 select_element = Select(driver.find_element(By.ID, 'MainContent_listAno'))
 anos = [option.get_attribute('value') for option in select_element.options]
 
-#Filtro de ano (apenas arquivos com ano maior que o escolhido)
-# filtro_ano = 2017
-
 # Iterar sobre cada ano
 for ano in anos:
-    #Capturar apenas os anos maior ou igual que o filtro
-    # if int(ano) < filtro_ano:
-    #     continue
 
     # Reencontrar o elemento de ano e clicar nele
     ano_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, f"//option[@value='{ano}']")))
