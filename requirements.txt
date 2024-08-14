@@ -3,3 +3,5 @@ pyarrow
 selenium
 pandas
 ipykernel
+chardet
+io
